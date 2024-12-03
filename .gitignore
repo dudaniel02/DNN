@@ -1,0 +1,32 @@
+# Ignore virtual environment folder
+env_pytorch/
+
+# Ignore output files and logs
+outputs/
+logs/
+
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pth
+# Ignore large binaries
+*.dll
+*.lib
+*.keras
+*.pth
+
+# Explicitly ignore problematic files
+env_pytorch/Lib/site-packages/torch/lib/torch_cpu.dll
+env_pytorch/Lib/site-packages/torch/lib/dnnl.lib
+outputs/checkpoints/siamese_model.keras
+env_pytorch/
+outputs/
+*.pth
+logs/
+*.dll
+*.lib
+*.keras
+__pycache__/
+env_pytorch/Lib/site-packages/torch/lib/torch_cpu.dll
+outputs/checkpoints/siamese_model.keras
+env_pytorch/Lib/site-packages/torch/lib/dnnl.lib
