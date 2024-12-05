@@ -9,8 +9,8 @@ import torch.nn.functional as F
 
 def preprocess_image(img):
     """Convert image to tensor and normalize."""
-    img_tensor = torch.tensor(img).float().permute(2, 0, 1) / 255.0  # Example preprocessing
-    img_tensor = img_tensor.unsqueeze(0)  # Add batch dimension
+    img_tensor = torch.tensor(img).float().permute(2, 0, 1) / 255.0
+    img_tensor = img_tensor.unsqueeze(0)  #Batch dimension
     return img_tensor
 
 def pairwise_distance(embedding1, embedding2):
@@ -43,7 +43,7 @@ def predict_similarity(model, img1, img2, device="cpu"):
     distance = pairwise_distance(embedding1, embedding2).item()
 
     # Convert distance to similarity score
-    similarity_score = 1 / (1 + distance)  # Inverse relationship: lower distance = higher similarity score
+    similarity_score = 1 / (1 + distance)  #lower distance = higher similarity score
 
     return similarity_score
 
@@ -69,7 +69,6 @@ def extract_embedding(model, img, device="cpu"):
 if __name__ == "__main__":
     model_path = "siamese_model.pth"
 
-    # Device configuration
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Load images and labels
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     if len(images) == 0:
         print("No images were loaded. Please check the directory and file paths.")
     else:
-        # Initialize and load the model
+        #Load the model
         model = SiameseNetwork()
         model.load_state_dict(torch.load(model_path, map_location=device))
         model.to(device)

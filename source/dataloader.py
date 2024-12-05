@@ -128,14 +128,6 @@ def create_balanced_pairs(images, labels, max_pairs=10000):
 
     return image_pairs, pair_labels
 
-    all_pairs = positive_pairs + negative_pairs
-    random.shuffle(all_pairs)
-
-    image_pairs = np.array([(pair[0], pair[1]) for pair in all_pairs])
-    pair_labels = np.array([pair[2] for pair in all_pairs])
-
-    return image_pairs, pair_labels
-
 class SiamesePairDataset(Dataset):
     def __init__(self, image_pairs, pair_labels):
         self.image_pairs = image_pairs
