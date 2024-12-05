@@ -21,3 +21,5 @@ The Fish4Knowledge dataset was used, containing:
 - Each image is paired with a mask for object detection tasks.
 
 The dataset was retrieved from [Fish4Knowledge](https://homepages.inf.ed.ac.uk/rbf/fish4knowledge/GROUNDTRUTH/RECOG/).
+
+## Set directory to cd .\DNN-EXAM\source\

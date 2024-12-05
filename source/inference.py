@@ -67,7 +67,6 @@ def extract_embedding(model, img, device="cpu"):
 
 
 if __name__ == "__main__":
-    # Path to the saved model
     model_path = "siamese_model.pth"
 
     # Device configuration
@@ -86,13 +85,12 @@ if __name__ == "__main__":
         model.to(device)
         model.eval()
 
-        # Test on same and different pairs
         img1, img2 = images[0], images[0]  # Same image
         img3 = images[1]  # Different image
 
         print("Testing Similarity:")
-        same_score = predict_similarity(model, img1, img2, device)  # Same image
-        diff_score = predict_similarity(model, img1, img3, device)  # Different images
+        same_score = predict_similarity(model, img1, img2, device)  
+        diff_score = predict_similarity(model, img1, img3, device)  
 
         print(f"Similarity Score (Same Image): {same_score:.4f}")
         print(f"Similarity Score (Different Image): {diff_score:.4f}")
