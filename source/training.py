@@ -7,7 +7,7 @@ from Siamese_model import SiameseNetwork, ContrastiveLoss
 from dataloader import load_images_and_masks, create_balanced_pairs, SiamesePairDataset 
 import numpy as np
 
-# Early stopping class
+# Early stopping
 class EarlyStopping:
     def __init__(self, patience=5, min_delta=0):
         self.patience = patience
@@ -36,7 +36,7 @@ def train_model(model, train_loader, val_loader, epochs=10, learning_rate=0.001,
     model.train()
 
     for epoch in range(epochs):
-        model.train()  # Set the model to training mode
+        model.train()  # Set the model train
         total_loss = 0
         correct = 0
         total_samples = 0
