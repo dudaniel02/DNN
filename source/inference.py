@@ -15,7 +15,9 @@ def preprocess_image(img):
 
 def pairwise_distance(embedding1, embedding2):
     """Compute pairwise Euclidean distance."""
-    return F.pairwise_distance(embedding1, embedding2)
+    # Ensure input tensors have the same dimensions
+    assert embedding1.shape == embedding2.shape, "Embeddings must have the same shape."
+    return torch.sqrt(torch.sum((embedding1 - embedding2) ** 2, dim=1))
 
 def predict_similarity(model, img1, img2, device="cpu"):
     """
@@ -39,15 +41,28 @@ def predict_similarity(model, img1, img2, device="cpu"):
     with torch.no_grad():
         embedding1, embedding2 = model(img1_tensor, img2_tensor)
 
+    # Normalize embeddings
+    embedding1 = F.normalize(embedding1, p=2, dim=1)  # Normalize along feature dimensions
+    embedding2 = F.normalize(embedding2, p=2, dim=1)
+
+    # Print embeddings for debugging
+    print(f"Embedding 1: {embedding1}")
+    print(f"Embedding 2: {embedding2}")
+
+
     # Compute Euclidean distance
     distance = pairwise_distance(embedding1, embedding2).item()
 
+    # Print distance for debugging
+    print(f"Distance: {distance}")
+
     # Convert distance to similarity score
-    similarity_score = 1 / (1 + distance)  #lower distance = higher similarity score
+    similarity_score = 1 / (1 + distance)
+
+    # Print similarity score for debugging
+    print(f"Similarity Score: {similarity_score}")
 
     return similarity_score
-
-
 def extract_embedding(model, img, device="cpu"):
     """
     Extract feature embeddings from the shared network.
@@ -87,7 +102,7 @@ if __name__ == "__main__":
         img1, img2 = images[0], images[0]  # Same image
         img3 = images[1]  # Different image
 
-        print("Testing Similarity:")
+        #print("Testing Similarity:")
         same_score = predict_similarity(model, img1, img2, device)  
         diff_score = predict_similarity(model, img1, img3, device)  
 
@@ -98,5 +113,6 @@ if __name__ == "__main__":
         embedding2_same = extract_embedding(model, img2, device)
         embedding2_diff = extract_embedding(model, img3, device)
 
-        print(f"Embedding Difference (Same Pair): {torch.abs(embedding1_same - embedding2_same).sum().item()}")
-        print(f"Embedding Difference (Different Pair): {torch.abs(embedding1_same - embedding2_diff).sum().item()}")
+        print(f"Embedding Difference (Same Pair): {torch.sqrt(torch.sum((embedding1_same - embedding2_same) ** 2)).item()}")
+        print(f"Embedding Difference (Different Pair): {torch.sqrt(torch.sum((embedding1_same - embedding2_diff) ** 2)).item()}")
+

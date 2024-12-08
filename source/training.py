@@ -36,7 +36,7 @@ def train_model(model, train_loader, val_loader, epochs=10, learning_rate=0.001,
     model.train()
 
     for epoch in range(epochs):
-        model.train()  # Set the model train
+        model.train()  
         total_loss = 0
         correct = 0
         total_samples = 0
@@ -49,7 +49,7 @@ def train_model(model, train_loader, val_loader, epochs=10, learning_rate=0.001,
                 output1, output2 = model(img1, img2)
                 loss = criterion(output1, output2, label)
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  
                 optimizer.step()
 
                 total_loss += loss.item()
@@ -80,7 +80,7 @@ def train_model(model, train_loader, val_loader, epochs=10, learning_rate=0.001,
         if early_stopping.early_stop:
             print("Early stopping")
             break
-
+#SAVE MODEL
     os.makedirs("./", exist_ok=True)
     torch.save(model.state_dict(), "siamese_model.pth")
     print("Model saved siamese_model.pth")
@@ -113,15 +113,15 @@ def evaluate_model(model, test_loader, margin=0.5, device="cpu"):
     print(f"Test Loss: {total_loss:.4f}, Test Accuracy: {accuracy:.4f}")
 
 if __name__ == "__main__":
-    # Load and preprocess data
+    # Load and preprocess 
     group_folder = "./"
     images, masks, labels = load_images_and_masks(group_folder)
 
-    # Convert labels to integers
+    #Labels to int
     unique_labels = {label: idx for idx, label in enumerate(set(labels))}
     labels_int = np.array([unique_labels[label] for label in labels])
 
-    # Create balanced pairs
+    #Balanced pairs
     image_pairs, pair_labels = create_balanced_pairs(images, labels_int, max_pairs=10000)
 
     # Split data into training and validation
@@ -136,10 +136,9 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 
-    # Initialize and train the model
+    # start to train model
     model = SiameseNetwork(embedding_size=256)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     train_model(model, train_loader, val_loader, epochs=100, learning_rate=0.00001, margin=1.0, device=device)
 
-    # Evaluate the model (using the validation set as the test set for simplicity)
     evaluate_model(model, val_loader, margin=1.0, device=device)
