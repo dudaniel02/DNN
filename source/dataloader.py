@@ -85,6 +85,7 @@ def load_images_and_masks(group_folder, target_size=(128, 128)):
     return np.array(images), np.array(masks), np.array(labels)
 
 def create_balanced_pairs(images, labels, max_pairs=10000):
+    # Map labels to indices of images
     label_to_indices = defaultdict(list)
     for idx, label in enumerate(labels):
         label_to_indices[label].append(idx)
@@ -92,28 +93,32 @@ def create_balanced_pairs(images, labels, max_pairs=10000):
     positive_pairs = []
     negative_pairs = []
 
+    # Get unique labels
     labels_set = list(set(labels))
-    num_labels = len(labels_set)
-
-    # Oversample minority classes
-    max_samples_per_class = max(len(indices) for indices in label_to_indices.values())
-    for label, indices in label_to_indices.items():
-        while len(indices) < max_samples_per_class:
-            indices.append(random.choice(indices))
 
     # Generate positive pairs: Different fish, same label
     for _ in range(max_pairs // 2):
+        # Select a random label
         label = random.choice(labels_set)
-        if len(label_to_indices[label]) < 2:
+        indices = label_to_indices[label]
+
+        # Ensure there are at least two different images for the label
+        if len(indices) < 2:
             continue
-        idx1, idx2 = random.sample(label_to_indices[label], 2)  # Ensure different images from the same group
+        
+        # Select two different images from the same group
+        idx1, idx2 = random.sample(indices, 2)
         positive_pairs.append([images[idx1], images[idx2], 1])
 
     # Generate negative pairs: Fish from different labels
     for _ in range(max_pairs // 2):
         label1, label2 = random.sample(labels_set, 2)
+
+        # Ensure there are images for both labels
         if len(label_to_indices[label1]) == 0 or len(label_to_indices[label2]) == 0:
             continue
+        
+        # Select one random image from each group
         idx1 = random.choice(label_to_indices[label1])
         idx2 = random.choice(label_to_indices[label2])
         negative_pairs.append([images[idx1], images[idx2], 0])
