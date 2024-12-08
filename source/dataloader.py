@@ -85,7 +85,6 @@ def load_images_and_masks(group_folder, target_size=(128, 128)):
     return np.array(images), np.array(masks), np.array(labels)
 
 def create_balanced_pairs(images, labels, max_pairs=10000):
-    # Map labels to indices of images
     label_to_indices = defaultdict(list)
     for idx, label in enumerate(labels):
         label_to_indices[label].append(idx)
@@ -93,41 +92,39 @@ def create_balanced_pairs(images, labels, max_pairs=10000):
     positive_pairs = []
     negative_pairs = []
 
-    # Get unique labels
     labels_set = list(set(labels))
 
-    # Generate positive pairs: Different fish, same label
+    # Generate positive pairs
     for _ in range(max_pairs // 2):
-        # Select a random label
         label = random.choice(labels_set)
         indices = label_to_indices[label]
-
-        # Ensure there are at least two different images for the label
+        
+        # Ensure at least two images are available
         if len(indices) < 2:
             continue
         
-        # Select two different images from the same group
+        # Select two different images
         idx1, idx2 = random.sample(indices, 2)
+        
+        # Debug: Check that selected images are distinct
+        if np.array_equal(images[idx1], images[idx2]):
+            print(f"Warning: Identical images selected for positive pair. Label: {label}, Indices: {idx1}, {idx2}")
+        
         positive_pairs.append([images[idx1], images[idx2], 1])
 
-    # Generate negative pairs: Fish from different labels
+    # Generate negative pairs
     for _ in range(max_pairs // 2):
         label1, label2 = random.sample(labels_set, 2)
-
-        # Ensure there are images for both labels
         if len(label_to_indices[label1]) == 0 or len(label_to_indices[label2]) == 0:
             continue
         
-        # Select one random image from each group
         idx1 = random.choice(label_to_indices[label1])
         idx2 = random.choice(label_to_indices[label2])
         negative_pairs.append([images[idx1], images[idx2], 0])
 
-    # Combine and shuffle
     all_pairs = positive_pairs + negative_pairs
     random.shuffle(all_pairs)
 
-    # Split into image pairs and labels
     image_pairs = np.array([(pair[0], pair[1]) for pair in all_pairs])
     pair_labels = np.array([pair[2] for pair in all_pairs])
 

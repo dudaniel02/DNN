@@ -1,23 +1,23 @@
 import torch
 from Siamese_model import SiameseNetwork
 from dataloader import load_images_and_masks
-from torch.nn.functional import pairwise_distance
-
-
-import torch
 import torch.nn.functional as F
+import numpy as np
+
 
 def preprocess_image(img):
     """Convert image to tensor and normalize."""
     img_tensor = torch.tensor(img).float().permute(2, 0, 1) / 255.0
-    img_tensor = img_tensor.unsqueeze(0)  #Batch dimension
+    img_tensor = img_tensor.unsqueeze(0)  # Batch dimension
     return img_tensor
+
 
 def pairwise_distance(embedding1, embedding2):
     """Compute pairwise Euclidean distance."""
     # Ensure input tensors have the same dimensions
     assert embedding1.shape == embedding2.shape, "Embeddings must have the same shape."
     return torch.sqrt(torch.sum((embedding1 - embedding2) ** 2, dim=1))
+
 
 def predict_similarity(model, img1, img2, device="cpu"):
     """
@@ -48,18 +48,17 @@ def predict_similarity(model, img1, img2, device="cpu"):
     print(f"Embedding 1: {embedding1}")
     print(f"Embedding 2: {embedding2}")
 
-
     # Compute Euclidean distance
     distance = pairwise_distance(embedding1, embedding2).item()
-
     print(f"Distance: {distance}")
 
     # Convert distance to similarity score
     similarity_score = 1 / (1 + distance)
-
     print(f"Similarity Score: {similarity_score}")
 
     return similarity_score
+
+
 def extract_embedding(model, img, device="cpu"):
     """
     Extract feature embeddings from the shared network.
@@ -80,7 +79,6 @@ def extract_embedding(model, img, device="cpu"):
 
 if __name__ == "__main__":
     model_path = "siamese_model.pth"
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Load images and labels
@@ -88,28 +86,40 @@ if __name__ == "__main__":
     print(f"Loaded {len(images)} images.")
 
     if len(images) == 0:
-        print("No images were loaded. Please check the directory and file paths.")
+        print("No images were loaded, check the directory")
     else:
-        #Load the model
+        # Load the model with weights_only=True
         model = SiameseNetwork()
         model.load_state_dict(torch.load(model_path, map_location=device))
         model.to(device)
         model.eval()
 
-        img1, img2 = images[0], images[0]  # Same image
-        img3 = images[1]  # Different image
+        # Find a group with at least two images
+        group_indices = np.where(labels == labels[0])[0]  # All indices for the same group
+        if len(group_indices) < 2:
+            print("Not enough images in the group to select two distinct ones.")
+            img1, img2 = images[group_indices[0]], images[group_indices[0]]  # Same image (fallback)
+        else:
+            img1, img2 = images[group_indices[0]], images[group_indices[1]]  # Two distinct images
 
-        #print("Testing Similarity:")
-        same_score = predict_similarity(model, img1, img2, device)  
-        diff_score = predict_similarity(model, img1, img3, device)  
+        # Select a different image for comparison
+        different_group_indices = np.where(labels != labels[0])[0]
+        if len(different_group_indices) == 0:
+            print("No images from a different group available for comparison. Using the same group for testing.")
+            img3 = img1  # Fallback
+        else:
+            img3 = images[different_group_indices[0]]
 
-        print(f"Similarity Score (Same Image): {same_score:.4f}")
-        print(f"Similarity Score (Different Image): {diff_score:.4f}")
+        # Testing similarity scores
+        same_group_score = predict_similarity(model, img1, img2, device)
+        different_group_score = predict_similarity(model, img1, img3, device)
+
+        print(f"Similarity Score (Same Group): {same_group_score:.4f}")
+        print(f"Similarity Score (Different Group): {different_group_score:.4f}")
 
         embedding1_same = extract_embedding(model, img1, device)
         embedding2_same = extract_embedding(model, img2, device)
         embedding2_diff = extract_embedding(model, img3, device)
 
-        print(f"Embedding Difference (Same Pair): {torch.sqrt(torch.sum((embedding1_same - embedding2_same) ** 2)).item()}")
-        print(f"Embedding Difference (Different Pair): {torch.sqrt(torch.sum((embedding1_same - embedding2_diff) ** 2)).item()}")
-
+        print(f"Embedding Difference (Same Group): {torch.sqrt(torch.sum((embedding1_same - embedding2_same) ** 2)).item()}")
+        print(f"Embedding Difference (Different Group): {torch.sqrt(torch.sum((embedding1_same - embedding2_diff) ** 2)).item()}")
