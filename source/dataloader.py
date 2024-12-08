@@ -101,15 +101,15 @@ def create_balanced_pairs(images, labels, max_pairs=10000):
         while len(indices) < max_samples_per_class:
             indices.append(random.choice(indices))
 
-    # Generate positive pairs
+    # Generate positive pairs: Different fish, same label
     for _ in range(max_pairs // 2):
         label = random.choice(labels_set)
         if len(label_to_indices[label]) < 2:
             continue
-        idx1, idx2 = random.sample(label_to_indices[label], 2)
+        idx1, idx2 = random.sample(label_to_indices[label], 2)  # Ensure different images from the same group
         positive_pairs.append([images[idx1], images[idx2], 1])
 
-    # Generate negative pairs
+    # Generate negative pairs: Fish from different labels
     for _ in range(max_pairs // 2):
         label1, label2 = random.sample(labels_set, 2)
         if len(label_to_indices[label1]) == 0 or len(label_to_indices[label2]) == 0:
