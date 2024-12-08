@@ -45,7 +45,6 @@ def predict_similarity(model, img1, img2, device="cpu"):
     embedding1 = F.normalize(embedding1, p=2, dim=1)  # Normalize along feature dimensions
     embedding2 = F.normalize(embedding2, p=2, dim=1)
 
-    # Print embeddings for debugging
     print(f"Embedding 1: {embedding1}")
     print(f"Embedding 2: {embedding2}")
 
@@ -53,13 +52,11 @@ def predict_similarity(model, img1, img2, device="cpu"):
     # Compute Euclidean distance
     distance = pairwise_distance(embedding1, embedding2).item()
 
-    # Print distance for debugging
     print(f"Distance: {distance}")
 
     # Convert distance to similarity score
     similarity_score = 1 / (1 + distance)
 
-    # Print similarity score for debugging
     print(f"Similarity Score: {similarity_score}")
 
     return similarity_score
